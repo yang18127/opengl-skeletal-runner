@@ -36,7 +36,6 @@ public:
 				isJumping = false;
 				yVelocity = 0.0f;
 			}
-
 		}
 	}
 

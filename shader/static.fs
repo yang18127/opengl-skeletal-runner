@@ -11,7 +11,7 @@ uniform vec3 viewPos;
 uniform vec3 lightColor;
 
 uniform float time;
-uniform float obstacleSpeed;
+uniform float planeSpeed;
 
 void main() 
 {
@@ -32,7 +32,7 @@ void main()
 	vec3 specular = specularStrength * spec * lightColor;
 
 	vec2 uv = TexCoords;
-	uv.y += time * obstacleSpeed;
+	uv.y += time * planeSpeed;
 
 	vec4 texColor = texture(texture_diffuse1, uv);
 

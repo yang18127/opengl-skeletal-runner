@@ -1,4 +1,8 @@
-﻿#include <glad/glad.h>
+﻿// 캐릭터 및 애니메이션 모델 : https://www.mixamo.com
+// 나무 장애물 : https://kenney.nl 
+// 바닥 텍스쳐 : https://ambientcg.com
+// 하늘: https://polyhaven.com 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <common.h>
@@ -30,6 +34,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 bool isGameOver = false;
+int score = 0;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -70,19 +75,19 @@ int main()
     float planeVertices[] = {
          2.0f, -0.5f,  10.0f,    0.0f, 1.0f, 0.0f,    1.0f,   0.0f,
         -2.0f, -0.5f,  10.0f,    0.0f, 1.0f, 0.0f,    0.0f,   0.0f,
-        -2.0f, -0.5f, -100.0f,   0.0f, 1.0f, 0.0f,    0.0f,  30.0f,
+        -2.0f, -0.5f, -100.0f,   0.0f, 1.0f, 0.0f,    0.0f,   30.0f,
 
          2.0f, -0.5f,  10.0f,    0.0f, 1.0f, 0.0f,    1.0f,   0.0f,
-        -2.0f, -0.5f, -100.0f,   0.0f, 1.0f, 0.0f,    0.0f,  30.0f,
-         2.0f, -0.5f, -100.0f,   0.0f, 1.0f, 0.0f,    1.0f,  30.0f,
+        -2.0f, -0.5f, -100.0f,   0.0f, 1.0f, 0.0f,    0.0f,   30.0f,
+         2.0f, -0.5f, -100.0f,   0.0f, 1.0f, 0.0f,    1.0f,   30.0f,
 
         -2.0f,  0.0f,  10.0f,    0.0f, 1.0f, 0.0f,    0.05f,  0.0f,
         -2.2f,  0.0f,  10.0f,    0.0f, 1.0f, 0.0f,    0.00f,  0.0f,
-        -2.2f,  0.0f, -100.0f,   0.0f, 1.0f, 0.0f,    0.00f, 30.0f,
+        -2.2f,  0.0f, -100.0f,   0.0f, 1.0f, 0.0f,    0.00f,  30.0f,
 
         -2.0f,  0.0f,  10.0f,    0.0f, 1.0f, 0.0f,    0.05f,  0.0f,
-        -2.2f,  0.0f, -100.0f,   0.0f, 1.0f, 0.0f,    0.00f, 30.0f,
-        -2.0f,  0.0f, -100.0f,   0.0f, 1.0f, 0.0f,    0.05f, 30.0f,
+        -2.2f,  0.0f, -100.0f,   0.0f, 1.0f, 0.0f,    0.00f,  30.0f,
+        -2.0f,  0.0f, -100.0f,   0.0f, 1.0f, 0.0f,    0.05f,  30.0f,
 
         -2.0f,  0.0f,  10.0f,    1.0f, 0.0f, 0.0f,    0.125f, 0.0f,
         -2.0f, -0.5f,  10.0f,    1.0f, 0.0f, 0.0f,    0.000f, 0.0f,
@@ -94,11 +99,11 @@ int main()
 
          2.2f,  0.0f,  10.0f,    0.0f, 1.0f, 0.0f,    0.05f,  0.0f,
          2.0f,  0.0f,  10.0f,    0.0f, 1.0f, 0.0f,    0.00f,  0.0f,
-         2.0f,  0.0f, -100.0f,   0.0f, 1.0f, 0.0f,    0.00f, 30.0f,
+         2.0f,  0.0f, -100.0f,   0.0f, 1.0f, 0.0f,    0.00f,  30.0f,
 
          2.2f,  0.0f,  10.0f,    0.0f, 1.0f, 0.0f,    0.05f,  0.0f,
-         2.0f,  0.0f, -100.0f,   0.0f, 1.0f, 0.0f,    0.00f, 30.0f,
-         2.2f,  0.0f, -100.0f,   0.0f, 1.0f, 0.0f,    0.05f, 30.0f,
+         2.0f,  0.0f, -100.0f,   0.0f, 1.0f, 0.0f,    0.00f,  30.0f,
+         2.2f,  0.0f, -100.0f,   0.0f, 1.0f, 0.0f,    0.05f,  30.0f,
 
          2.0f,  0.0f,  10.0f,   -1.0f, 0.0f, 0.0f,    0.125f, 0.0f,
          2.0f, -0.5f,  10.0f,   -1.0f, 0.0f, 0.0f,    0.000f, 0.0f,
@@ -222,7 +227,11 @@ int main()
 
         if (!isGameOver) {
             player->update(deltaTime);
-            obstacle->update(deltaTime);
+
+            if (obstacle->update(deltaTime)) { 
+                score++;
+                std::cout << "점수: " << score << "\n";
+            }
 
             if (!player->isJumping)
                 currentAnimator = runAnimator;
@@ -234,7 +243,7 @@ int main()
 
             if (obstacle->checkCollision(*player)) {
                 isGameOver = true;
-                std::cout << "게임오버 - 스페이스바로 재시작\n";
+                std::cout << "게임오버, 최종 점수 : "<< score << " 스페이스로 재시작\n";
             }
         }
         glClearColor(0.4f, 0.7f, 1.0f, 1.0f);
@@ -254,9 +263,9 @@ int main()
         staticShader.setFloat("time", glfwGetTime());
 
         if (isGameOver)
-            staticShader.setFloat("obstacleSpeed", 0.0f);
+            staticShader.setFloat("planeSpeed", 0.0f);
         else
-            staticShader.setFloat("obstacleSpeed", 8.0f * (30.0f / 110.0f) * 1.25f);
+            staticShader.setFloat("planeSpeed", 8.0f * (30.0f / 110.0f) * 1.25f);
 
         glm::mat4 model = glm::mat4(1.0f);
         staticShader.setMat4("model", model);
@@ -268,7 +277,7 @@ int main()
         glBindVertexArray(planeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 30);
 
-        staticShader.setFloat("obstacleSpeed", 0);
+        staticShader.setFloat("planeSpeed", 0);
         obstacle->draw(staticShader);
 
         animShader.use();
@@ -329,6 +338,7 @@ void processInput(GLFWwindow* window)
             jumpAnimator->Reset();
             currentAnimator = runAnimator;
             isGameOver = false;
+            score = 0;
         }
         return;
     }

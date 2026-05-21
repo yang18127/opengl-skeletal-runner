@@ -19,12 +19,14 @@ public:
 		speed = moveSpeed;
 	}
 
-	void update(float deltaTime) {
+	bool update(float deltaTime) {
 		position.z += speed * deltaTime;
 
 		if (position.z > 5.0f) {
 			position.z = startZ;
+			return true;
 		}
+		return false;
 	}
 
 	void draw(Shader& shader) {
